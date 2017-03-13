@@ -1,0 +1,34 @@
+#!/bin/bash
+
+URL="$1"
+USERAGENT_1="Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36" # Chrome 41.0.2228.0
+USERAGENT_2="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36" # Chrome 41.0.2227.1
+USERAGENT_3="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1" # Firefox 40.1
+USERAGENT_4="Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0" # Firefox 36.0
+USERAGENT_5="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A" # Safari 7.0.3
+USERAGENT_6="Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25" # Safari 6.0
+USERAGENT_7="Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko" # Internet Explorer 11.0
+USERAGENT_8="Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko" # Internet Explorer 11.0
+USERAGENT_9="Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; InfoPath.2; SLCC1; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET CLR 2.0.50727) 3gpp-gba UNTRUSTED/1.0" # Internet Explorer 10.6
+USERAGENT_10="Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 7.0; InfoPath.3; .NET CLR 3.1.40767; Trident/6.0; en-IN)" # Internet Explorer 10.0
+
+var1=$(for ((n=0;n<100;n++))
+do
+    NUMBER=$[ ( $RANDOM % 10 )  + 1 ]
+    USERAGENT=USERAGENT_${NUMBER}
+    URL1=$(curl -m 100 -A "${!USERAGENT}" -sw "\n\n%{redirect_url}" "${URL}" | tail -n 1)
+    URL2=$(curl -m 100 -A "${!USERAGENT}" -Ls -w %{url_effective} -o /dev/null "${URL}")
+    echo "$URL1"
+    echo "$URL2"
+done)
+
+var2=$(for line in $var1; do
+  python3 ./get-domain.py $line
+done)
+
+var3=$(echo "$var2"|tr " " "\n"|sort -u)
+
+for line in $var3; do
+  echo "$line"
+  echo "$line" >> redirect_list.txt
+done
