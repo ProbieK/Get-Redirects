@@ -1,6 +1,6 @@
 #!/bin/bash
 
-URL="$1"
+LOOP_NUMBER='100'
 USERAGENT_1="Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36" # Chrome 41.0.2228.0
 USERAGENT_2="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36" # Chrome 41.0.2227.1
 USERAGENT_3="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1" # Firefox 40.1
@@ -12,7 +12,41 @@ USERAGENT_8="Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:1
 USERAGENT_9="Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; InfoPath.2; SLCC1; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET CLR 2.0.50727) 3gpp-gba UNTRUSTED/1.0" # Internet Explorer 10.6
 USERAGENT_10="Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 7.0; InfoPath.3; .NET CLR 3.1.40767; Trident/6.0; en-IN)" # Internet Explorer 10.0
 
-var1=$(for ((n=0;n<100;n++))
+function usage {
+  echo "Minimum Usage:"
+  echo "./get-redirects -u [URL]"
+  echo "OR"
+  echo "./get-redirects -n [Number of Loops] -u [URL]"
+  exit
+}
+
+while getopts 'n:u:h' flag; do
+  case "${flag}" in
+    n) LOOP_NUMBER=${OPTARG} ;;
+    u) URL=${OPTARG} ;;
+    h) usage ;;
+    *) echo "error \"Unexpected option ${flag}\""
+        exit ;;
+  esac
+done
+
+if [ -z "$URL" ]
+then
+  echo "Minimum Usage:"
+  echo "./get-redirects -u [URL]"
+  echo "OR"
+  echo "./get-redirects -n 50 -u [URL]"
+  exit
+fi
+
+if [ "$LOOP_NUMBER" != "100" ]
+then
+  echo "Looping "$LOOP_NUMBER" times"
+else
+  echo "Looping 100 times"
+fi
+
+var1=$(for ((n=0;n<$LOOP_NUMBER;n++))
 do
     NUMBER=$[ ( $RANDOM % 10 )  + 1 ]
     USERAGENT=USERAGENT_${NUMBER}
