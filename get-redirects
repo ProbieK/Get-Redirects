@@ -32,10 +32,7 @@ done
 
 if [ -z "$URL" ]
 then
-  echo "Minimum Usage:"
-  echo "./get-redirects -u [URL]"
-  echo "OR"
-  echo "./get-redirects -n 50 -u [URL]"
+  echo "Use ./get-redirects -h for usage details"
   exit
 fi
 
