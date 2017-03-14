@@ -1,6 +1,7 @@
 #!/bin/bash
 
 LOOP_NUMBER='100'
+OUTPUT_LOCATION=''
 USERAGENT_1="Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36" # Chrome 41.0.2228.0
 USERAGENT_2="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36" # Chrome 41.0.2227.1
 USERAGENT_3="Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1" # Firefox 40.1
@@ -13,17 +14,34 @@ USERAGENT_9="Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; In
 USERAGENT_10="Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 7.0; InfoPath.3; .NET CLR 3.1.40767; Trident/6.0; en-IN)" # Internet Explorer 10.0
 
 function usage {
+  echo "Flags:"
+  echo "-n =  Number of loops to make through the script"
+  echo "      Because the script uses 2 different methods of finding redirects per loop"
+  echo "      the actual number of requests made to the URL will be double the amount of loops"
+  echo ""
+  echo "-u =  (required) Specify the URL you want to check"
+  echo ""
+  echo "-o =  Saves output to file in an OpenDNS compatible Newline Delineated format"
+  echo ""
+  echo "-s =  Silence the default output to the terminal"
+  echo "      (if specified, use the -o flag to specify where to save the output)"
+  echo ""
   echo "Minimum Usage:"
   echo "./get-redirects -u [URL]"
-  echo "OR"
-  echo "./get-redirects -n [Number of Loops] -u [URL]"
+  echo ""
+  echo "Other Examples:"
+  echo "./get-redirects -n 500 -u [URL]"
+  echo "./get-redirects -u google.com -o ./output.txt"
+  echo "./get-redirects -u http://www.google.com/ -o ./output.txt -s"
   exit
 }
 
-while getopts 'n:u:h' flag; do
+while getopts 'n:u:o:sh' flag; do
   case "${flag}" in
     n) LOOP_NUMBER=${OPTARG} ;;
     u) URL=${OPTARG} ;;
+    o) OUTPUT_LOCATION=${OPTARG} ;;
+    s) SILENT='true' ;;
     h) usage ;;
     *) echo "error \"Unexpected option ${flag}\""
         exit ;;
@@ -36,12 +54,7 @@ then
   exit
 fi
 
-if [ "$LOOP_NUMBER" != "100" ]
-then
-  echo "Looping "$LOOP_NUMBER" times"
-else
-  echo "Looping 100 times"
-fi
+echo "Looping "$LOOP_NUMBER" Times"
 
 var1=$(for ((n=0;n<$LOOP_NUMBER;n++))
 do
@@ -59,7 +72,14 @@ done)
 
 var3=$(echo "$var2"|tr " " "\n"|sort -u)
 
+#Output Selections
 for line in $var3; do
-  echo "$line"
-  echo "$line" >> redirect_list.txt
+  if [ ! -z "$OUTPUT_LOCATION" ]
+    then
+      echo "$line" >> "$OUTPUT_LOCATION"
+  fi
+  if [ "$SILENT" != "true" ]
+    then
+      echo "$line"
+  fi
 done
