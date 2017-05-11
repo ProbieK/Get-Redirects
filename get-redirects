@@ -13,11 +13,20 @@ USERAGENT_8="Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:1
 USERAGENT_9="Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; InfoPath.2; SLCC1; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET CLR 2.0.50727) 3gpp-gba UNTRUSTED/1.0" # Internet Explorer 10.6
 USERAGENT_10="Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 7.0; InfoPath.3; .NET CLR 3.1.40767; Trident/6.0; en-IN)" # Internet Explorer 10.0
 
+INTERNALIPINFO=$(ip route get 8.8.8.8 | head -1)
+IPIFACERESULT=$(echo "$INTERNALIPINFO" | awk -F'dev ' '{print $NF}' | awk '{print $1}')
+DNSSERVER=$(nmcli -t -f IP4.DNS device show "$IPIFACERESULT" | awk -F ':' '{print $2}' | head -1)
+if [ ! $DNSSERVER == "8.8.8.8" ]; then
+  echo "Primary DNS server is not set to 8.8.8.8"
+  echo "Please update DNS server to use 8.8.8.8"
+  exit
+fi
+
 function usage {
   echo "Flags:"
   echo "-n =  Number of loops to make through the script"
-  echo "      Because the script uses 2 different methods of finding redirects per loop"
-  echo "      the actual number of requests made to the URL will be double the amount of loops"
+  echo "      Because the script uses 4 different methods of finding redirects per loop"
+  echo "      the actual number of requests made to the URL will be 4 times the amount of loops"
   echo ""
   echo "-u =  (required) Specify the URL you want to check"
   echo ""
@@ -54,7 +63,7 @@ then
   exit
 fi
 
-echo "Looping "$LOOP_NUMBER" Times"
+echo "Looping $LOOP_NUMBER Times"
 
 var1=$(for ((n=0;n<$LOOP_NUMBER;n++))
 do
@@ -62,8 +71,12 @@ do
     USERAGENT=USERAGENT_${NUMBER}
     URL1=$(curl -m 100 -A "${!USERAGENT}" -sw "\n\n%{redirect_url}" "${URL}" | tail -n 1)
     URL2=$(curl -m 100 -A "${!USERAGENT}" -Ls -w %{url_effective} -o /dev/null "${URL}")
+    URL3=$(curl -m 100 -A "${!USERAGENT}" -Ls "${URL}" | grep 'meta http-equiv="refresh"' | grep -Eo "https?|ftp:\/\/[^'\"/]+/?")
+    URL4=$(curl -m 100 -A "${!USERAGENT}" -Ls "${URL}" | grep "window.location" | grep -Eo "https?|ftp:\/\/[^'\"/]+/?")
     echo "$URL1"
     echo "$URL2"
+    echo "$URL3"
+    echo "$URL4"
 done)
 
 var2=$(for line in $var1; do
