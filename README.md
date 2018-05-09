@@ -1,6 +1,7 @@
 # Get-Redirects
-Script to enumerate all redirects of a given URL.
-Must have Python3 installed.
+Script to enumerate all redirects of a given URL.  
+Must have Python3 installed.  
+Only compatible with Ubuntu Linux and derivatives.  
 ## Usage:
 ```bash
 git clone https://github.com/ProbieK/Get-Redirects.git
